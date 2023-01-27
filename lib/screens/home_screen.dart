@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:pomodoro_timer/model/pomodoro_status.dart';
+import 'package:pomodoro_timer/utils/constants.dart';
 import 'package:pomodoro_timer/widget/progress_icons.dart';
 import 'package:pomodoro_timer/widget/custom_button.dart';
 
@@ -20,6 +24,13 @@ const _btnTextReset = 'RESET';
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
+    int remainingTime = pomodoroTotalTime;
+    String mainBtnText = _btnTextStart;
+    PomodoroStatus pomodoroStatus = PomodoroStatus.pausedPomodoro;
+    //for the cuntdown
+    Timer _timer;
+    int pomodoroNum = 0;
+    int setNum = 0;
     return Scaffold(
       appBar: AppBar(title: const Center(child: Text('Title'))),
       backgroundColor: Colors.grey[800],
@@ -30,15 +41,15 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               height: 10,
             ),
-            const Text(
-              'Pomodoro number: 2',
+            Text(
+              'Pomodoro number: $pomodoroNum',
               style: TextStyle(fontSize: 32, color: Colors.white),
             ),
             const SizedBox(
               height: 10,
             ),
-            const Text(
-              'Set: 3',
+            Text(
+              'Set: $setNum',
               style: TextStyle(fontSize: 32, color: Colors.white),
             ),
             Expanded(
@@ -51,8 +62,8 @@ class _HomePageState extends State<HomePage> {
                     percent: 0.3,
                     //zaookrąglenie wewnąrz indikatora
                     circularStrokeCap: CircularStrokeCap.round,
-                    center: const Text(
-                      '13:42',
+                    center: Text(
+                      _secondsToFormatedString(remainingTime),
                       style: TextStyle(fontSize: 40, color: Colors.white),
                     ),
                     progressColor: Colors.red,
@@ -96,4 +107,20 @@ class _HomePageState extends State<HomePage> {
       )),
     );
   }
+}
+
+//Method to convert sec to min
+_secondsToFormatedString(int seconds) {
+  // ~ - rounded
+  int roundedMinutes = seconds ~/ 60;
+  int remainingSeconds = seconds - (roundedMinutes * 60);
+  String remainingSecondsFormated;
+
+  if (remainingSeconds < 10) {
+    remainingSecondsFormated = '0$remainingSeconds';
+  } else {
+    remainingSecondsFormated = remainingSeconds.toString();
+  }
+
+  return '$roundedMinutes:$remainingSeconds';
 }

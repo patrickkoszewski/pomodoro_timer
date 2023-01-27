@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CustomButton extends StatelessWidget {
-  final Function onTap;
+  final void Function() onTap;
   final String text;
 
   const CustomButton({required this.onTap, required this.text});
@@ -11,10 +11,10 @@ class CustomButton extends StatelessWidget {
     return ButtonTheme(
       minWidth: 200,
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: onTap,
         child: Text(
           text,
-          style: TextStyle(fontSize: 15),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),
     );

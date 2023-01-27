@@ -12,23 +12,31 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-const _btnTextStart = 'START_POMODORO';
-const _btnTextResumePomodoro = 'RESUME_POMODORO';
-const _btnTextResumeBreak = 'RESUME_BREAK';
-const _btnTextStartShortBreak = 'TAKE_SHORT_BREAK';
-const _btnTextStartLongBreak = 'TAKE_LONG_BREAK';
-const _btnTextStartNewSet = 'START_NEW_SET';
+const _btnTextStart = 'START POMODORO';
+const _btnTextResumePomodoro = 'RESUME POMODORO';
+const _btnTextResumeBreak = 'RESUME BREAK';
+const _btnTextStartShortBreak = 'TAKE SHORT BREAK';
+const _btnTextStartLongBreak = 'TAKE LONG BREAK';
+const _btnTextStartNewSet = 'START NEW SET';
 const _btnTextPause = 'PAUSE';
 const _btnTextReset = 'RESET';
 
 class _HomePageState extends State<HomePage> {
   int remainingTime = pomodoroTotalTime;
   String mainBtnText = _btnTextStart;
-  //for the cuntdown
-  late Timer _timer;
+
+  Timer _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    // code to be executed every second
+  });
   int pomodoroNum = 0;
   int setNum = 0;
   PomodoroStatus pomodoroStatus = PomodoroStatus.pausedPomodoro;
+
+  @override
+  void dispose() {
+    _cancelTimer();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,13 +64,13 @@ class _HomePageState extends State<HomePage> {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(
+                const SizedBox(
                   height: 40,
                 ),
                 CircularPercentIndicator(
                   radius: 140.0,
                   lineWidth: 15.0,
-                  percent: 0.3,
+                  percent: _getPomodoroPercentage(),
                   //zaookrąglenie wewnąrz indikatora
                   circularStrokeCap: CircularStrokeCap.round,
                   center: Text(
@@ -89,17 +97,17 @@ class _HomePageState extends State<HomePage> {
                   height: 10,
                 ),
                 SizedBox(
-                  width: 200,
+                  width: 250,
                   child: CustomButton(
                     onTap: _mainButtonPressed,
-                    text: 'start',
+                    text: mainBtnText,
                   ),
                 ),
                 SizedBox(
-                  width: 200,
+                  width: 250,
                   child: CustomButton(
-                    onTap: () {},
-                    text: 'Reset',
+                    onTap: _resetButtonPressed,
+                    text: _btnTextReset,
                   ),
                 ),
               ],
@@ -123,7 +131,38 @@ class _HomePageState extends State<HomePage> {
       remainingSecondsFormated = remainingSeconds.toString();
     }
 
-    return '$roundedMinutes:$remainingSeconds';
+    return '$roundedMinutes:$remainingSecondsFormated';
+  }
+
+// Method
+  _getPomodoroPercentage() {
+    int totalTime;
+    switch (pomodoroStatus) {
+      case PomodoroStatus.runingPomodoro:
+        totalTime = pomodoroTotalTime;
+        break;
+      case PomodoroStatus.pausedPomodoro:
+        totalTime = pomodoroTotalTime;
+        break;
+      case PomodoroStatus.runningShortBreak:
+        totalTime = shortBreakTime;
+        break;
+      case PomodoroStatus.pausedShortBreak:
+        totalTime = shortBreakTime;
+        break;
+      case PomodoroStatus.runningLongBreak:
+        totalTime = longBreakTime;
+        break;
+      case PomodoroStatus.pausedLongBreak:
+        totalTime = longBreakTime;
+        break;
+      case PomodoroStatus.setFinished:
+        totalTime = pomodoroTotalTime;
+        break;
+    }
+
+    double percentage = (totalTime - remainingTime) / totalTime;
+    return percentage;
   }
 
 // Method for onTap<MainButton>
@@ -133,7 +172,7 @@ class _HomePageState extends State<HomePage> {
         _startPomodoroCountdown();
         break;
       case PomodoroStatus.runingPomodoro:
-        // TODO: Handle this case.
+        _pausePomodoroCountdown();
         break;
       case PomodoroStatus.runningShortBreak:
         // TODO: Handle this case.
@@ -190,6 +229,29 @@ class _HomePageState extends State<HomePage> {
                     }
                 }
             });
+  }
+
+  _pausePomodoroCountdown() {
+    pomodoroStatus = PomodoroStatus.pausedPomodoro;
+    _cancelTimer();
+    setState(() {
+      mainBtnText = _btnTextResumePomodoro;
+    });
+  }
+
+  _resetButtonPressed() {
+    pomodoroNum = 0;
+    setNum = 0;
+    _cancelTimer();
+    _stopCountdown();
+  }
+
+  _stopCountdown() {
+    pomodoroStatus = PomodoroStatus.pausedPomodoro;
+    setState(() {
+      mainBtnText = _btnTextStart;
+      remainingTime = pomodoroTotalTime;
+    });
   }
 
   _cancelTimer() {

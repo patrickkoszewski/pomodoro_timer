@@ -1,10 +1,9 @@
 // everything that should be avaible for app
 
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'package:pomodoro_timer/model/pomodoro_status.dart';
 
-const pomodoroTotalTime = 25 * 60;
+const pomodoroTotalTime = 1 * 60; // <-test 25 * 60;
 const shortBreakTime = 5 * 60;
 const longBreakTime = 15 * 60;
 const pomodoroPerSet = 4;

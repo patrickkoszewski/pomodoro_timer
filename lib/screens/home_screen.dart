@@ -22,15 +22,16 @@ const _btnTextPause = 'PAUSE';
 const _btnTextReset = 'RESET';
 
 class _HomePageState extends State<HomePage> {
+  int remainingTime = pomodoroTotalTime;
+  String mainBtnText = _btnTextStart;
+  //for the cuntdown
+  late Timer _timer;
+  int pomodoroNum = 0;
+  int setNum = 0;
+  PomodoroStatus pomodoroStatus = PomodoroStatus.pausedPomodoro;
+
   @override
   Widget build(BuildContext context) {
-    int remainingTime = pomodoroTotalTime;
-    String mainBtnText = _btnTextStart;
-    PomodoroStatus pomodoroStatus = PomodoroStatus.pausedPomodoro;
-    //for the cuntdown
-    Timer _timer;
-    int pomodoroNum = 0;
-    int setNum = 0;
     return Scaffold(
       appBar: AppBar(title: const Center(child: Text('Title'))),
       backgroundColor: Colors.grey[800],
@@ -43,84 +44,157 @@ class _HomePageState extends State<HomePage> {
             ),
             Text(
               'Pomodoro number: $pomodoroNum',
-              style: TextStyle(fontSize: 32, color: Colors.white),
+              style: const TextStyle(fontSize: 24, color: Colors.white),
             ),
             const SizedBox(
               height: 10,
             ),
             Text(
               'Set: $setNum',
-              style: TextStyle(fontSize: 32, color: Colors.white),
+              style: const TextStyle(fontSize: 24, color: Colors.white),
             ),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularPercentIndicator(
-                    radius: 220.0,
-                    lineWidth: 15.0,
-                    percent: 0.3,
-                    //zaookrąglenie wewnąrz indikatora
-                    circularStrokeCap: CircularStrokeCap.round,
-                    center: Text(
-                      _secondsToFormatedString(remainingTime),
-                      style: TextStyle(fontSize: 40, color: Colors.white),
-                    ),
-                    progressColor: Colors.red,
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 40,
+                ),
+                CircularPercentIndicator(
+                  radius: 140.0,
+                  lineWidth: 15.0,
+                  percent: 0.3,
+                  //zaookrąglenie wewnąrz indikatora
+                  circularStrokeCap: CircularStrokeCap.round,
+                  center: Text(
+                    _secondsToFormatedString(remainingTime),
+                    style: const TextStyle(fontSize: 40, color: Colors.white),
                   ),
-                  const SizedBox(
-                    height: 10,
+                  progressColor: statusColor[pomodoroStatus],
+                ),
+                const SizedBox(
+                  height: 40,
+                ),
+                ProgressIcons(
+                  total: pomodoroPerSet,
+                  done: pomodoroNum - (setNum * pomodoroPerSet),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  statusDescription[pomodoroStatus]!,
+                  style: const TextStyle(color: Colors.white),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                SizedBox(
+                  width: 200,
+                  child: CustomButton(
+                    onTap: _mainButtonPressed,
+                    text: 'start',
                   ),
-                  const ProgressIcons(
-                    total: 4,
-                    done: 3,
+                ),
+                SizedBox(
+                  width: 200,
+                  child: CustomButton(
+                    onTap: () {},
+                    text: 'Reset',
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  const Text(
-                    'status description',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  SizedBox(
-                    width: 200,
-                    child: CustomButton(
-                      onTap: () {},
-                      text: 'start',
-                    ),
-                  ),
-                  SizedBox(
-                    width: 200,
-                    child: CustomButton(
-                      onTap: () {},
-                      text: 'Reset',
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
       )),
     );
   }
-}
 
 //Method to convert sec to min
-_secondsToFormatedString(int seconds) {
-  // ~ - rounded
-  int roundedMinutes = seconds ~/ 60;
-  int remainingSeconds = seconds - (roundedMinutes * 60);
-  String remainingSecondsFormated;
+  _secondsToFormatedString(int seconds) {
+    // ~ - rounded
+    int roundedMinutes = seconds ~/ 60;
+    int remainingSeconds = seconds - (roundedMinutes * 60);
+    String remainingSecondsFormated;
 
-  if (remainingSeconds < 10) {
-    remainingSecondsFormated = '0$remainingSeconds';
-  } else {
-    remainingSecondsFormated = remainingSeconds.toString();
+    if (remainingSeconds < 10) {
+      remainingSecondsFormated = '0$remainingSeconds';
+    } else {
+      remainingSecondsFormated = remainingSeconds.toString();
+    }
+
+    return '$roundedMinutes:$remainingSeconds';
   }
 
-  return '$roundedMinutes:$remainingSeconds';
+// Method for onTap<MainButton>
+  _mainButtonPressed() {
+    switch (pomodoroStatus) {
+      case PomodoroStatus.pausedPomodoro:
+        _startPomodoroCountdown();
+        break;
+      case PomodoroStatus.runingPomodoro:
+        // TODO: Handle this case.
+        break;
+      case PomodoroStatus.runningShortBreak:
+        // TODO: Handle this case.
+        break;
+      case PomodoroStatus.pausedShortBreak:
+        // TODO: Handle this case.
+        break;
+      case PomodoroStatus.runningLongBreak:
+        // TODO: Handle this case.
+        break;
+      case PomodoroStatus.pausedLongBreak:
+        // TODO: Handle this case.
+        break;
+      case PomodoroStatus.setFinished:
+        // TODO: Handle this case.
+        break;
+    }
+  }
+
+  _startPomodoroCountdown() {
+    pomodoroStatus = PomodoroStatus.runingPomodoro;
+    _cancelTimer();
+
+    _timer = Timer.periodic(
+        Duration(seconds: 1),
+        (timer) => {
+              if (remainingTime > 0)
+                {
+                  setState(() {
+                    remainingTime--;
+                    mainBtnText = _btnTextPause;
+                  })
+                }
+              else
+                {
+                  //to do playSound(),
+                  pomodoroNum++,
+                  _cancelTimer(),
+                  if (pomodoroNum % pomodoroPerSet == 0)
+                    {
+                      pomodoroStatus = PomodoroStatus.pausedLongBreak,
+                      setState(() {
+                        remainingTime = longBreakTime;
+                        mainBtnText = _btnTextStartLongBreak;
+                      }),
+                    }
+                  else
+                    {
+                      pomodoroStatus = PomodoroStatus.pausedShortBreak,
+                      setState(() {
+                        remainingTime = shortBreakTime;
+                        mainBtnText = _btnTextStartShortBreak;
+                      }),
+                    }
+                }
+            });
+  }
+
+  _cancelTimer() {
+    if (_timer != null) {
+      _timer.cancel();
+    }
+  }
 }

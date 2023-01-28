@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:pomodoro_timer/model/pomodoro_status.dart';
@@ -22,10 +23,12 @@ const _btnTextPause = 'PAUSE';
 const _btnTextReset = 'RESET';
 
 class _HomePageState extends State<HomePage> {
+  final AudioCache _player = AudioCache();
+  final player = AudioPlayer();
   int remainingTime = pomodoroTotalTime;
   String mainBtnText = _btnTextStart;
 
-  Timer _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+  Timer _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
     // code to be executed every second
   });
   int pomodoroNum = 0;
@@ -36,6 +39,13 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _cancelTimer();
     super.dispose();
+  }
+
+  //you should hold sound befor for not having any delays
+  @override
+  void initState() {
+    super.initState();
+    _player.load('tomato.mp3');
   }
 
   @override
@@ -165,7 +175,7 @@ class _HomePageState extends State<HomePage> {
     return percentage;
   }
 
-// Method for onTap<MainButton>
+// Method for onTap<MainButton> //jaki tekst ma się wyświetlać
   _mainButtonPressed() {
     switch (pomodoroStatus) {
       case PomodoroStatus.pausedPomodoro:
@@ -175,21 +185,81 @@ class _HomePageState extends State<HomePage> {
         _pausePomodoroCountdown();
         break;
       case PomodoroStatus.runningShortBreak:
-        // TODO: Handle this case.
+        _pauseShortBreakCountdown();
         break;
       case PomodoroStatus.pausedShortBreak:
-        // TODO: Handle this case.
+        _startShortBreak();
         break;
       case PomodoroStatus.runningLongBreak:
-        // TODO: Handle this case.
+        _pauseLongBreakCountdown();
         break;
       case PomodoroStatus.pausedLongBreak:
-        // TODO: Handle this case.
+        _startLongBreak();
         break;
       case PomodoroStatus.setFinished:
-        // TODO: Handle this case.
+        setNum++;
+        _startPomodoroCountdown();
         break;
     }
+  }
+
+  //here 1 state changes ony once not every second
+  _startShortBreak() {
+    pomodoroStatus = PomodoroStatus.runningShortBreak;
+    setState(() {
+      mainBtnText = _btnTextPause;
+    });
+    _cancelTimer();
+    _timer = Timer.periodic(
+        const Duration(seconds: 1),
+        (timer) => {
+              if (remainingTime > 0)
+                {
+                  setState(() {
+                    remainingTime--;
+                  }),
+                }
+              else
+                {
+                  // we finished short break it should ask user to start new pomodoro
+                  _playSound(),
+                  remainingTime = pomodoroTotalTime,
+                  _cancelTimer(),
+                  pomodoroStatus = PomodoroStatus.pausedPomodoro,
+                  setState(() {
+                    mainBtnText = _btnTextStart;
+                  }),
+                }
+            });
+  }
+
+  _startLongBreak() {
+    pomodoroStatus = PomodoroStatus.runningLongBreak;
+    setState(() {
+      mainBtnText = _btnTextPause;
+    });
+    _cancelTimer();
+    _timer = Timer.periodic(
+        const Duration(seconds: 1),
+        (timer) => {
+              if (remainingTime > 0)
+                {
+                  setState(() {
+                    remainingTime--;
+                  }),
+                }
+              else
+                {
+                  // we finished long break it should ask user to start new pomodoro
+                  _playSound(),
+                  remainingTime = pomodoroTotalTime,
+                  _cancelTimer(),
+                  pomodoroStatus = PomodoroStatus.setFinished,
+                  setState(() {
+                    mainBtnText = _btnTextStartNewSet;
+                  }),
+                }
+            });
   }
 
   _startPomodoroCountdown() {
@@ -197,7 +267,7 @@ class _HomePageState extends State<HomePage> {
     _cancelTimer();
 
     _timer = Timer.periodic(
-        Duration(seconds: 1),
+        const Duration(seconds: 1),
         (timer) => {
               if (remainingTime > 0)
                 {
@@ -208,7 +278,7 @@ class _HomePageState extends State<HomePage> {
                 }
               else
                 {
-                  //to do playSound(),
+                  _playSound(),
                   pomodoroNum++,
                   _cancelTimer(),
                   if (pomodoroNum % pomodoroPerSet == 0)
@@ -254,9 +324,30 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // break 5 min // long break 15 min
+  _pauseShortBreakCountdown() {
+    pomodoroStatus = PomodoroStatus.pausedShortBreak;
+    _pauseBreakCountdown();
+  }
+
+  _pauseLongBreakCountdown() {
+    pomodoroStatus = PomodoroStatus.pausedLongBreak;
+    _pauseBreakCountdown();
+  }
+
+  _pauseBreakCountdown() {
+    _cancelTimer();
+
+    mainBtnText = _btnTextResumeBreak;
+  }
+
   _cancelTimer() {
     if (_timer != null) {
       _timer.cancel();
     }
+  }
+
+  _playSound() {
+    player.play(AssetSource('tomato.mp3'));
   }
 }

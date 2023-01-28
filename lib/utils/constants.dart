@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:pomodoro_timer/model/pomodoro_status.dart';
 
-const pomodoroTotalTime = 1 * 60; // <-test 25 * 60;
-const shortBreakTime = 5 * 60;
-const longBreakTime = 15 * 60;
+const pomodoroTotalTime = 5; // <-test 25 * 60;
+const shortBreakTime = 3;
+const longBreakTime = 6;
 const pomodoroPerSet = 4;
 
 //so we can pass the pomodoroStatus and create description

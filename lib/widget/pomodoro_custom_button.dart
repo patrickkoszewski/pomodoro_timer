@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class CustomButton extends StatelessWidget {
+class PomodoroCustomButton extends StatelessWidget {
   final void Function() onTap;
   final String text;
 
-  const CustomButton({required this.onTap, required this.text});
+  const PomodoroCustomButton({required this.onTap, required this.text});
 
   @override
   Widget build(BuildContext context) {

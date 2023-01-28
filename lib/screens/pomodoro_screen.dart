@@ -4,13 +4,13 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:pomodoro_timer/model/pomodoro_status.dart';
-import 'package:pomodoro_timer/utils/constants.dart';
-import 'package:pomodoro_timer/widget/progress_icons.dart';
-import 'package:pomodoro_timer/widget/custom_button.dart';
+import 'package:pomodoro_timer/utils/pomodoro_constants.dart';
+import 'package:pomodoro_timer/widget/pomodoro_progress_icons.dart';
+import 'package:pomodoro_timer/widget/pomodoro_custom_button.dart';
 
-class HomePage extends StatefulWidget {
+class PomodoroPage extends StatefulWidget {
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<PomodoroPage> createState() => _PomodoroPageState();
 }
 
 const _btnTextStart = 'START POMODORO';
@@ -22,7 +22,7 @@ const _btnTextStartNewSet = 'START NEW SET';
 const _btnTextPause = 'PAUSE';
 const _btnTextReset = 'RESET';
 
-class _HomePageState extends State<HomePage> {
+class _PomodoroPageState extends State<PomodoroPage> {
   final AudioCache _player = AudioCache();
   final player = AudioPlayer();
   int remainingTime = pomodoroTotalTime;
@@ -108,14 +108,14 @@ class _HomePageState extends State<HomePage> {
                 ),
                 SizedBox(
                   width: 250,
-                  child: CustomButton(
+                  child: PomodoroCustomButton(
                     onTap: _mainButtonPressed,
                     text: mainBtnText,
                   ),
                 ),
                 SizedBox(
                   width: 250,
-                  child: CustomButton(
+                  child: PomodoroCustomButton(
                     onTap: _resetButtonPressed,
                     text: _btnTextReset,
                   ),
